@@ -3,8 +3,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 export interface Todo {
     id: number;
     todo: string;
-    completed: boolean;
-    userId: number;
+    completed?: boolean;
+    userId?: number;
 }
 
 interface TodoState {
@@ -30,7 +30,6 @@ export const todoSlice = createSlice({
             state.isLoading = false;
         },
         removeTodo: (state, action: PayloadAction<string | number>) => {
-            console.log({ action })
             const idx = state.data.findIndex((el) => el.id === action.payload);
             if (idx > -1) {
                 state.data.splice(idx, 1);
@@ -57,8 +56,6 @@ export const todoSlice = createSlice({
     },
 });
 
-// Export the actions
 export const { addTodo, removeTodo, editTodo, fetchLoader, editLoader, addLoader, removeLoader } = todoSlice.actions;
 
-// Export the reducer
 export default todoSlice.reducer;

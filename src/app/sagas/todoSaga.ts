@@ -1,8 +1,8 @@
 import { call, put, select, takeEvery, takeLatest } from "redux-saga/effects";
 import { addLoader, addTodo, editLoader, editTodo, fetchLoader, removeLoader, removeTodo, Todo } from "../slices/todo";
 import { RootState } from "../store";
+import { addTodoAPI, deleteTodoAPI, getTodoAPI } from "../../service";
 
-// Define the shape of the action payload for adding and removing todos
 interface AddTodoAction {
     type: string;
     payload: Todo;
@@ -19,41 +19,34 @@ interface EditLoaderAction {
     payload: Todo;
 }
 
-function* getTodoList() {
+export function* getTodoList() {
     try {
-        const res: Response = yield call(() => fetch('https://dummyjson.com/todos?limit=5'));
+        const res: Response = yield call(getTodoAPI);
         const data: { todos: Todo[] } = yield res.json();
-        console.log({ tood: data.todos.length })
+
         yield put(addTodo(data.todos || []));
     } catch (error) {
         console.log({ error });
     }
 }
 
-function* newTodo(action: AddTodoAction) {
+export function* newTodo(action: AddTodoAction) {
     const state: RootState = yield select();
-    const res: Response = yield call(() => fetch('https://dummyjson.com/todos/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            todo: action.payload,
-            completed: false,
-            userId: 5,
-        }),
-    }));
+    // @ts-ignore
+    const res: Response = yield call(addTodoAPI, action.payload);
 
     const data: Todo = yield res.json();
 
     yield put(addTodo({ ...data, id: state.todo.data.length + 1, }));
 }
 
-function* deleteTodo(action: RemoveTodoAction) {
+export function* deleteTodo(action: RemoveTodoAction) {
     try {
-        const res: Response = yield call(() => fetch('https://dummyjson.com/todos/' + action.payload, {
-            method: 'DELETE',
-        }));
+        // @ts-ignore
+        const res: Response = yield call(deleteTodoAPI, action.payload);
 
         if (res.ok) {
+            // @ts-ignore
             yield put(removeTodo(action.payload));
         } else {
             console.log('Failed to delete todo');
@@ -63,11 +56,11 @@ function* deleteTodo(action: RemoveTodoAction) {
     }
 }
 
-function* updateTodo(action: EditLoaderAction) {
+export function* updateTodo(action: EditLoaderAction) {
     yield put(editTodo(action.payload));
 }
 
-function* todoSaga() {
+export function* todoSaga() {
     yield takeEvery(fetchLoader.type, getTodoList);
     yield takeEvery(addLoader.type, newTodo);
     yield takeLatest(removeLoader.type, deleteTodo);
