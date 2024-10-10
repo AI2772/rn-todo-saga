@@ -1,6 +1,6 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import App from '../src/App';
+import App from './App';
 
 jest.mock('../src/components/TodoScreen', () => {
     const React = require('react');
